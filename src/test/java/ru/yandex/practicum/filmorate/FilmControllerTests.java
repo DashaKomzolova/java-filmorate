@@ -1,24 +1,35 @@
 package ru.yandex.practicum.filmorate;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import static org.junit.jupiter.api.Assertions.*;
-import java.time.LocalDate;
 
-@SpringBootTest
+import java.time.LocalDate;
+import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 class FilmControllerTests {
 
 	private FilmController controller;
 	private Film validFilm;
 
+	private Validator validator;
+
 	@BeforeEach
 	void setUp() {
 		controller = new FilmController();
+
+		ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+		validator = factory.getValidator();
+
 		validFilm = new Film();
 		validFilm.setName("Test Film");
 		validFilm.setDescription("Test Description");
@@ -27,43 +38,67 @@ class FilmControllerTests {
 	}
 
 	@Test
-	void addFilm_ShouldAddFilmSuccessfully() {
+	void validation_emptyName_shouldFail() {
+		validFilm.setName("");
+
+		Set<ConstraintViolation<Film>> violations = validator.validate(validFilm);
+
+		assertFalse(violations.isEmpty());
+	}
+
+	@Test
+	void validation_nullName_shouldFail() {
+		validFilm.setName(null);
+
+		Set<ConstraintViolation<Film>> violations = validator.validate(validFilm);
+
+		assertFalse(violations.isEmpty());
+	}
+
+	@Test
+	void validation_descriptionTooLong_shouldFail() {
+		validFilm.setDescription("a".repeat(201));
+
+		Set<ConstraintViolation<Film>> violations = validator.validate(validFilm);
+
+		assertFalse(violations.isEmpty());
+	}
+
+	@Test
+	void validation_negativeDuration_shouldFail() {
+		validFilm.setDuration(-10);
+
+		Set<ConstraintViolation<Film>> violations = validator.validate(validFilm);
+
+		assertFalse(violations.isEmpty());
+	}
+
+	@Test
+	void validation_zeroDuration_shouldFail() {
+		validFilm.setDuration(0);
+
+		Set<ConstraintViolation<Film>> violations = validator.validate(validFilm);
+
+		assertFalse(violations.isEmpty());
+	}
+
+	@Test
+	void validation_validFilm_shouldPass() {
+		Set<ConstraintViolation<Film>> violations = validator.validate(validFilm);
+
+		assertTrue(violations.isEmpty());
+	}
+
+	@Test
+	void addFilm_shouldAddSuccessfully() {
 		Film added = controller.addFilm(validFilm);
 
 		assertNotNull(added.getId());
 		assertEquals("Test Film", added.getName());
-		assertEquals(80, added.getDuration());
 	}
 
 	@Test
-	void addFilm_WithEmptyName_ShouldThrowException() {
-		validFilm.setName("");
-
-		assertThrows(ConditionsNotMetException.class, () -> {
-			controller.addFilm(validFilm);
-		});
-	}
-
-	@Test
-	void addFilm_WithNullName_ShouldThrowException() {
-		validFilm.setName(null);
-
-		assertThrows(ConditionsNotMetException.class, () -> {
-			controller.addFilm(validFilm);
-		});
-	}
-
-	@Test
-	void addFilm_WithDescriptionLongerThan200_ShouldThrowException() {
-		validFilm.setDescription("a".repeat(201));
-
-		assertThrows(ConditionsNotMetException.class, () -> {
-			controller.addFilm(validFilm);
-		});
-	}
-
-	@Test
-	void addFilm_WithReleaseDateBefore1895_ShouldThrowException() {
+	void addFilm_releaseDateTooEarly_shouldThrowException() {
 		validFilm.setReleaseDate(LocalDate.of(1800, 1, 1));
 
 		assertThrows(ConditionsNotMetException.class, () -> {
@@ -72,35 +107,17 @@ class FilmControllerTests {
 	}
 
 	@Test
-	void addFilm_WithNegativeDuration_ShouldThrowException() {
-		validFilm.setDuration(-10);
-
-		assertThrows(ConditionsNotMetException.class, () -> {
-			controller.addFilm(validFilm);
-		});
-	}
-
-	@Test
-	void addFilm_WithZeroDuration_ShouldThrowException() {
-		validFilm.setDuration(0);
-
-		assertThrows(ConditionsNotMetException.class, () -> {
-			controller.addFilm(validFilm);
-		});
-	}
-
-	@Test
-	void updateFilm_ShouldUpdateSuccessfully() {
+	void updateFilm_shouldUpdateSuccessfully() {
 		Film added = controller.addFilm(validFilm);
 
-		added.setName("Updated Name");
+		added.setName("Updated");
 		Film updated = controller.updateFilm(added);
 
-		assertEquals("Updated Name", updated.getName());
+		assertEquals("Updated", updated.getName());
 	}
 
 	@Test
-	void updateFilm_WithNonExistentId_ShouldThrowException() {
+	void updateFilm_notFound_shouldThrowException() {
 		validFilm.setId(999L);
 
 		assertThrows(NotFoundException.class, () -> {
@@ -109,7 +126,7 @@ class FilmControllerTests {
 	}
 
 	@Test
-	void updateFilm_WithNullId_ShouldThrowException() {
+	void updateFilm_nullId_shouldThrowException() {
 		validFilm.setId(null);
 
 		assertThrows(ConditionsNotMetException.class, () -> {
@@ -118,15 +135,16 @@ class FilmControllerTests {
 	}
 
 	@Test
-	void getFilms_ShouldReturnAllFilms() {
+	void getFilms_shouldReturnAllFilms() {
 		controller.addFilm(validFilm);
 
-		Film secondFilm = new Film();
-		secondFilm.setName("Second");
-		secondFilm.setDescription("Desc");
-		secondFilm.setReleaseDate(LocalDate.of(2021, 1, 1));
-		secondFilm.setDuration(90);
-		controller.addFilm(secondFilm);
+		Film second = new Film();
+		second.setName("Second");
+		second.setDescription("Desc");
+		second.setReleaseDate(LocalDate.of(2021, 1, 1));
+		second.setDuration(90);
+
+		controller.addFilm(second);
 
 		assertEquals(2, controller.getFilms().size());
 	}
