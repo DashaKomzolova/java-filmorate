@@ -92,7 +92,6 @@ public class FilmService {
                 }
             }
         }
-        
         List<Film> popularFilms = new ArrayList<>();
         int limit = Math.min(count, filmsList.size());
         for (int i = 0; i < limit; i++) {
