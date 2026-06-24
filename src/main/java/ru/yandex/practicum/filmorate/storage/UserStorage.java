@@ -5,9 +5,14 @@ import java.util.Collection;
 
 public interface UserStorage {
     User addUser(User user);
+
     User updateUser(User user);
+
     void deleteUser(Long id);
-    User getUserById(Long id);  // вместо Optional<User>
+
+    User getUserById(Long id);
+
     Collection<User> getAllUsers();
+
     boolean existsById(Long id);
 }

@@ -5,9 +5,14 @@ import java.util.Collection;
 
 public interface FilmStorage {
     Film addFilm(Film film);
+
     Film updateFilm(Film film);
+
     void deleteFilm(Long id);
-    Film getFilmById(Long id);  // вместо Optional<Film>
+
+    Film getFilmById(Long id);
+
     Collection<Film> getAllFilms();
+
     boolean existsById(Long id);
 }
