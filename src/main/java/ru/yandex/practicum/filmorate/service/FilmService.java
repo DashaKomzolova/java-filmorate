@@ -1,23 +1,27 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.*;
 
-@Slf4j
 @Service
 public class FilmService {
     private final FilmStorage filmStorage;
+    private final UserStorage userStorage;  // ДОБАВИТЬ
     private final Map<Long, Set<Long>> likes = new HashMap<>();
+    private static final Logger log = LoggerFactory.getLogger(FilmService.class);
 
     @Autowired
-    public FilmService(FilmStorage filmStorage) {
+    public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
         this.filmStorage = filmStorage;
+        this.userStorage = userStorage;
     }
 
     public Film addFilm(Film film) {
@@ -42,6 +46,10 @@ public class FilmService {
             throw new NotFoundException("Фильм с id = " + filmId + " не найден");
         }
 
+        if (!userStorage.existsById(userId)) {
+            throw new NotFoundException("Пользователь с id = " + userId + " не найден");
+        }
+
         Set<Long> filmLikes = likes.get(filmId);
         if (filmLikes == null) {
             filmLikes = new HashSet<>();
@@ -58,6 +66,10 @@ public class FilmService {
             throw new NotFoundException("Фильм с id = " + filmId + " не найден");
         }
 
+        if (!userStorage.existsById(userId)) {
+            throw new NotFoundException("Пользователь с id = " + userId + " не найден");
+        }
+
         Set<Long> filmLikes = likes.get(filmId);
         if (filmLikes != null) {
             filmLikes.remove(userId);
@@ -66,13 +78,11 @@ public class FilmService {
     }
 
     public List<Film> getPopularFilms(Integer count) {
-
         if (count == null || count <= 0) {
             count = 10;
         }
 
         Collection<Film> allFilms = filmStorage.getAllFilms();
-
         List<Film> filmsList = new ArrayList<>(allFilms);
 
         for (int i = 0; i < filmsList.size() - 1; i++) {
@@ -92,6 +102,7 @@ public class FilmService {
                 }
             }
         }
+
         List<Film> popularFilms = new ArrayList<>();
         int limit = Math.min(count, filmsList.size());
         for (int i = 0; i < limit; i++) {
