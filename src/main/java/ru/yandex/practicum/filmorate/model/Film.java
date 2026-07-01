@@ -42,4 +42,8 @@ public class Film {
     public boolean isLikedBy(Long userId) {
         return likes.contains(userId);
     }
+
+    private Set<Genre> genres;
+
+    private MPA mpa;
 }
