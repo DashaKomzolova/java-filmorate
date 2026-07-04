@@ -11,84 +11,83 @@
 
 ## Схема базы данных
 
-![Схема БД](docs/database.png)
+![Схема БД](docs/db.png)
 
 ---
 
 ## Описание таблиц
 
-### Film
+### film
 Хранит информацию о фильмах.
 
 | Поле | Тип | Описание |
 |------|-----|----------|
-| id | INT | Уникальный идентификатор (PRIMARY KEY) |
+| id | BIGINT | Уникальный идентификатор (PRIMARY KEY) |
 | name | VARCHAR(255) | Название фильма |
 | description | VARCHAR(200) | Описание фильма |
 | release_date | DATE | Дата релиза |
 | duration | INT | Продолжительность в минутах |
-| mpa_id | INT | ID рейтинга MPA (FOREIGN KEY → MPA.id) |
+| mpa_id | BIGINT | ID рейтинга MPA (FOREIGN KEY → mpa.id) |
 
-### MPA (Motion Picture Association)
+### mpa (Motion Picture Association)
 Справочник возрастных рейтингов.
 
 | Поле | Тип | Описание |
 |------|-----|----------|
-| id | INT | Уникальный идентификатор (PRIMARY KEY) |
+| id | BIGINT | Уникальный идентификатор (PRIMARY KEY) |
 | name | VARCHAR(10) | Название рейтинга (G, PG, PG-13, R, NC-17) |
 
-### Genre
+### genre
 Справочник жанров фильмов.
 
 | Поле | Тип | Описание |
 |------|-----|----------|
-| id | INT | Уникальный идентификатор (PRIMARY KEY) |
+| id | BIGINT | Уникальный идентификатор (PRIMARY KEY) |
 | name | VARCHAR(50) | Название жанра |
 
-### Movie Genre
+### movie_genre
 Связующая таблица для связи фильмов и жанров (многие-ко-многим).
 
 | Поле | Тип | Описание |
 |------|-----|----------|
-| film_id | INT | ID фильма (PRIMARY KEY, FOREIGN KEY → Film.id) |
-| genre_id | INT | ID жанра (PRIMARY KEY, FOREIGN KEY → Genre.id) |
+| film_id | BIGINT | ID фильма (PRIMARY KEY, FOREIGN KEY → film.id) |
+| genre_id | BIGINT | ID жанра (PRIMARY KEY, FOREIGN KEY → genre.id) |
 
-### User
+### user
 Хранит информацию о пользователях.
 
 | Поле | Тип | Описание |
 |------|-----|----------|
-| id | INT | Уникальный идентификатор (PRIMARY KEY) |
+| id | BIGINT | Уникальный идентификатор (PRIMARY KEY) |
 | email | VARCHAR(255) | Email пользователя |
 | login | VARCHAR(255) | Логин пользователя |
 | name | VARCHAR(255) | Имя пользователя |
 | birthday | DATE | Дата рождения |
 
-### Likes
+### likes
 Хранит лайки пользователей на фильмы.
 
 | Поле | Тип | Описание |
 |------|-----|----------|
-| film_id | INT | ID фильма (PRIMARY KEY, FOREIGN KEY → Film.id) |
-| user_id | INT | ID пользователя (PRIMARY KEY, FOREIGN KEY → User.id) |
+| film_id | BIGINT | ID фильма (PRIMARY KEY, FOREIGN KEY → film.id) |
+| user_id | BIGINT | ID пользователя (PRIMARY KEY, FOREIGN KEY → user.id) |
 
-### Friends
+### friends
 Хранит связи дружбы между пользователями.
 
 | Поле | Тип | Описание |
 |------|-----|----------|
-| user_id | INT | ID пользователя (PRIMARY KEY, FOREIGN KEY → User.id) |
-| friend_id | INT | ID друга (PRIMARY KEY, FOREIGN KEY → User.id) |
+| user_id | BIGINT | ID пользователя (PRIMARY KEY, FOREIGN KEY → user.id) |
+| friend_id | BIGINT | ID друга (PRIMARY KEY, FOREIGN KEY → user.id) |
 | status | VARCHAR(20) | Статус дружбы (PENDING, CONFIRMED) |
 
 ---
 
-
 ### Описание связей:
-- **Film → MPA**: Многие фильмы могут иметь один рейтинг (многие-к-одному)
-- **Film → Genre**: Многие фильмы могут иметь много жанров (многие-ко-многим) через таблицу Movie Genre
-- **Film → User**: Многие пользователи могут лайкать многие фильмы (многие-ко-многим) через таблицу Likes
-- **User → User**: Многие пользователи могут дружить с многими пользователями (многие-ко-многим) через таблицу Friends
+- **film → mpa**: Многие фильмы могут иметь один рейтинг (многие-к-одному), связь через `film.mpa_id → mpa.id`
+- **film → genre**: Многие фильмы могут иметь много жанров (многие-ко-многим) через таблицу `movie_genre` (`movie_genre.film_id → film.id`, `movie_genre.genre_id → genre.id`)
+- **film → user**: Многие пользователи могут лайкать многие фильмы (многие-ко-многим) через таблицу `likes` (`likes.film_id → film.id`, `likes.user_id → user.id`)
+- **user → user**: Многие пользователи могут дружить с многими пользователями (многие-ко-многим) через таблицу `friends` (`friends.user_id → user.id`, `friends.friend_id → user.id`)
 
 ---
 
@@ -98,12 +97,15 @@
 
 #### Получить все фильмы
 ```sql
-SELECT * FROM film;
+SELECT id, name, description, release_date, duration, mpa_id
+FROM film;
 ```
 
 #### Получить фильм по ID
 ```sql
-SELECT * FROM film WHERE id = ?;
+SELECT id, name, description, release_date, duration, mpa_id
+FROM film
+WHERE id = ?;
 ```
 
 #### Получить все жанры фильма
@@ -146,17 +148,22 @@ LIMIT ?;
 
 #### Получить всех пользователей
 ```sql
-SELECT * FROM user;
-Получить пользователя по ID
-sql
-SELECT * FROM user WHERE id = ?;
+SELECT id, email, login, name, birthday
+FROM user;
+```
+
+#### Получить пользователя по ID
+```sql
+SELECT id, email, login, name, birthday
+FROM user
+WHERE id = ?;
 ```
 
 ### Друзья
 
 #### Получить всех друзей пользователя (подтвержденных)
 ```sql
-SELECT u.*
+SELECT u.id, u.email, u.login, u.name, u.birthday
 FROM user u
 JOIN friends f ON f.friend_id = u.id
 WHERE f.user_id = ? AND f.status = 'CONFIRMED';
@@ -164,7 +171,7 @@ WHERE f.user_id = ? AND f.status = 'CONFIRMED';
 
 #### Получить общих друзей двух пользователей
 ```sql
-SELECT u.*
+SELECT u.id, u.email, u.login, u.name, u.birthday
 FROM user u
 JOIN friends f1 ON f1.friend_id = u.id AND f1.status = 'CONFIRMED'
 JOIN friends f2 ON f2.friend_id = u.id AND f2.status = 'CONFIRMED'
