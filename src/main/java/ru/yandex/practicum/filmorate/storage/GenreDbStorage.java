@@ -12,7 +12,9 @@ import java.util.List;
 public class GenreDbStorage extends BaseDbStorage<Genre> {
 
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM genre WHERE id = ?";
+
     private static final String FIND_ALL_QUERY = "SELECT * FROM genre";
+
     private static final String EXISTS_QUERY = "SELECT COUNT(*) FROM genre WHERE id = ?";
 
     public GenreDbStorage(JdbcTemplate jdbc, RowMapper<Genre> mapper) {

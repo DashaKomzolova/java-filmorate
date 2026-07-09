@@ -19,16 +19,23 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
             "SELECT f.*, m.name AS mpa_name FROM film f " +
                     "LEFT JOIN mpa m ON f.mpa_id = m.id " +
                     "WHERE f.id = ?";
+
     private static final String FIND_ALL_QUERY =
             "SELECT f.*, m.name AS mpa_name FROM film f " +
                     "LEFT JOIN mpa m ON f.mpa_id = m.id";
+
     private static final String INSERT_QUERY = "INSERT INTO film(name, description, release_date, duration, mpa_id) " +
             "VALUES (?, ?, ?, ?, ?)";
+
     private static final String UPDATE_QUERY = "UPDATE film SET name = ?, description = ?, release_date = ?, " +
             "duration = ?, mpa_id = ? WHERE id = ?";
+
     private static final String DELETE_MOVIE_GENRE_QUERY = "DELETE FROM movie_genre WHERE film_id = ?";
+
     private static final String DELETE_LIKES_QUERY = "DELETE FROM likes WHERE film_id = ?";
+
     private static final String DELETE_FILM_QUERY = "DELETE FROM film WHERE id = ?";
+
     private static final String EXISTS_QUERY = "SELECT COUNT(*) FROM film WHERE id = ?";
 
     private static final String FIND_GENRES_BY_FILM_ID_QUERY =
@@ -36,13 +43,16 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
                     "JOIN movie_genre mg ON g.id = mg.genre_id " +
                     "WHERE mg.film_id = ? " +
                     "ORDER BY g.id";
+
     private static final String INSERT_MOVIE_GENRE_QUERY =
             "INSERT INTO movie_genre (film_id, genre_id) VALUES (?, ?)";
 
     private static final String ADD_LIKE_QUERY =
             "INSERT INTO likes (film_id, user_id) VALUES (?, ?)";
+
     private static final String REMOVE_LIKE_QUERY =
             "DELETE FROM likes WHERE film_id = ? AND user_id = ?";
+
     private static final String FIND_POPULAR_QUERY =
             "SELECT f.*, m.name AS mpa_name FROM film f " +
                     "LEFT JOIN mpa m ON f.mpa_id = m.id " +

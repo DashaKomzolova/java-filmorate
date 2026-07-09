@@ -15,23 +15,32 @@ import java.util.Optional;
 public class UserDbStorage extends BaseDbStorage<User> implements UserStorage {
 
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM users WHERE id = ?";
+
     private static final String FIND_ALL_QUERY = "SELECT * FROM users";
+
     private static final String INSERT_QUERY = "INSERT INTO users(email, login, name, birthday) " +
             "VALUES (?, ?, ?, ?)";
-    private static final String UPDATE_QUERY = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE id = ?";
+
+    private static final String UPDATE_QUERY = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? "
+                                                + "WHERE id = ?";
+
     private static final String DELETE_LIKES_QUERY = "DELETE FROM likes WHERE user_id = ?";
+
     private static final String DELETE_FRIENDS_QUERY = "DELETE FROM friends WHERE user_id = ? OR friend_id = ?";
+
     private static final String DELETE_USER_QUERY = "DELETE FROM users WHERE id = ?";
 
-    // новые запросы для friends
     private static final String ADD_FRIEND_QUERY =
             "INSERT INTO friends (user_id, friend_id, status) VALUES (?, ?, ?)";
+
     private static final String REMOVE_FRIEND_QUERY =
             "DELETE FROM friends WHERE user_id = ? AND friend_id = ?";
+
     private static final String FIND_FRIENDS_QUERY =
             "SELECT u.* FROM users u " +
                     "JOIN friends f ON u.id = f.friend_id " +
                     "WHERE f.user_id = ?";
+
     private static final String FIND_COMMON_FRIENDS_QUERY =
             "SELECT u.* FROM users u " +
                     "JOIN friends f1 ON u.id = f1.friend_id AND f1.user_id = ? " +

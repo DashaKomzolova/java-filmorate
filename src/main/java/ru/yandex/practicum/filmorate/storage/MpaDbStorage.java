@@ -12,7 +12,9 @@ import java.util.List;
 public class MpaDbStorage extends BaseDbStorage<MPA> {
 
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM mpa WHERE id = ?";
+
     private static final String FIND_ALL_QUERY = "SELECT * FROM mpa";
+
     private static final String EXISTS_QUERY = "SELECT COUNT(*) FROM mpa WHERE id = ?";
 
     public MpaDbStorage(JdbcTemplate jdbc, RowMapper<MPA> mapper) {
