@@ -5,9 +5,7 @@ import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class InMemoryUserStorage implements UserStorage {
@@ -48,12 +46,12 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User getUserById(Long id) {
+    public Optional<User> getUserById(Long id) {
         User user = users.get(id);
         if (user == null) {
             throw new NotFoundException("Пользователь с id = " + id + " не найден");
         }
-        return user;
+        return Optional.of(user);
     }
 
     @Override
@@ -64,5 +62,25 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public boolean existsById(Long id) {
         return users.containsKey(id);
+    }
+
+    @Override
+    public void addFriend(Long userId, Long friendId) {
+
+    }
+
+    @Override
+    public void removeFriend(Long userId, Long friendId) {
+
+    }
+
+    @Override
+    public List<User> getFriends(Long userId) {
+        return List.of();
+    }
+
+    @Override
+    public List<User> getCommonFriends(Long userId, Long otherId) {
+        return List.of();
     }
 }

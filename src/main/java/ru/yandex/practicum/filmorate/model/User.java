@@ -4,11 +4,13 @@ import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.time.LocalDate;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 @Data
 public class User {
+
     private Long id;
 
     @NotBlank(message = "Почта должна быть указана")
@@ -24,10 +26,14 @@ public class User {
     @Past(message = "Дата рождения не может быть в будущем")
     private LocalDate birthday;
 
-    private Set<Long> friends = new HashSet<>();
+    private Map<Long, FriendshipStatus> friends = new HashMap<>();
 
     public void addFriend(Long friendId) {
-        friends.add(friendId);
+        friends.put(friendId, FriendshipStatus.PENDING);
+    }
+
+    public void confirmFriend(Long friendId) {
+        friends.put(friendId, FriendshipStatus.CONFIRMED);
     }
 
     public void removeFriend(Long friendId) {
@@ -35,12 +41,12 @@ public class User {
     }
 
     public boolean isFriend(Long userId) {
-        return friends.contains(userId);
+        return friends.containsKey(userId);
     }
 
     public Set<Long> getCommonFriends(User otherUser) {
-        Set<Long> commonFriends = new HashSet<>(this.friends);
-        commonFriends.retainAll(otherUser.getFriends());
+        Set<Long> commonFriends = new java.util.HashSet<>(this.friends.keySet());
+        commonFriends.retainAll(otherUser.getFriends().keySet());
         return commonFriends;
     }
 }

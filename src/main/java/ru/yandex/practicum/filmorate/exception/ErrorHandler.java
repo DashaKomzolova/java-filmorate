@@ -58,4 +58,13 @@ public class ErrorHandler {
         response.put("error", "Произошла внутренняя ошибка сервера");
         return response;
     }
+
+    @ExceptionHandler(ValidationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleValidation(ValidationException e) {
+        log.warn("Ошибка 400: {}", e.getMessage());
+        Map<String, String> response = new HashMap<>();
+        response.put("error", e.getMessage());
+        return response;
+    }
 }
