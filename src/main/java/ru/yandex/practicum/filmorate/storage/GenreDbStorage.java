@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.util.List;
+import java.util.Set;
 
 @Component
 public class GenreDbStorage extends BaseDbStorage<Genre> {
@@ -33,5 +34,9 @@ public class GenreDbStorage extends BaseDbStorage<Genre> {
     public boolean existsById(Long id) {
         Integer count = jdbc.queryForObject(EXISTS_QUERY, Integer.class, id);
         return count != null && count > 0;
+    }
+
+    public boolean existsAllByIds(Set<Long> ids) {
+        return existsAllByIds("genre", ids);
     }
 }

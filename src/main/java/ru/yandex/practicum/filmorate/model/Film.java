@@ -29,7 +29,7 @@ public class Film {
     private int duration;
 
     @NotNull(message = "Рейтинг MPA должен быть указан")
-    private MPA mpa;
+    private Mpa mpa;
 
     private Set<Genre> genres = new LinkedHashSet<>();
 

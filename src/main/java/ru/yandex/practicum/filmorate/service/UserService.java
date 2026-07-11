@@ -44,9 +44,10 @@ public class UserService {
         return userStorage.updateUser(user);
     }
 
-    public Optional<User> getUserById(Long id) {
+    public User getUserById(Long id) {
         log.info("Получение пользователя с id={}", id);
-        return userStorage.getUserById(id);
+        return userStorage.getUserById(id)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + id + " не найден"));
     }
 
     public Collection<User> getAllUsers() {

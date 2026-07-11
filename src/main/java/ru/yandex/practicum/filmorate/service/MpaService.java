@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.model.MPA;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.MpaDbStorage;
 
 import java.util.Collection;
@@ -19,12 +19,12 @@ public class MpaService {
         this.mpaDbStorage = mpaDbStorage;
     }
 
-    public MPA getMpaById(Long id) {
+    public Mpa getMpaById(Long id) {
         log.info("Получение рейтинга с id={}", id);
         return mpaDbStorage.getMpaById(id);
     }
 
-    public Collection<MPA> getAllMpas() {
+    public Collection<Mpa> getAllMpas() {
         log.info("Получение всех рейтингов");
         return mpaDbStorage.getAllMPA();
     }

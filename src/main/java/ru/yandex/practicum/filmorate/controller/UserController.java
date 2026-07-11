@@ -41,7 +41,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public Optional<User> getUserById(@PathVariable Long id) {
+    public User getUserById(@PathVariable Long id) {
         log.info("Запрос на получение пользователя с id={}", id);
         return userService.getUserById(id);
     }

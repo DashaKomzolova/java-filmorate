@@ -16,6 +16,8 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -59,21 +61,20 @@ public class FilmService {
 
     private void validateFilm(Film film) {
         if (film.getReleaseDate().isBefore(MIN_RELEASE_DATE)) {
-            throw new ValidationException(
-                    "Дата релиза не может быть раньше 28 декабря 1895 года");
+            throw new ValidationException("Дата релиза не может быть раньше 28 декабря 1895 года");
         }
 
         if (film.getMpa() != null && !mpaStorage.existsById(film.getMpa().getId())) {
-            throw new NotFoundException(
-                    "Рейтинг с id = " + film.getMpa().getId() + " не найден");
+            throw new NotFoundException("Рейтинг с id = " + film.getMpa().getId() + " не найден");
         }
 
-        if (film.getGenres() != null) {
-            for (Genre genre : film.getGenres()) {
-                if (!genreStorage.existsById(genre.getId())) {
-                    throw new NotFoundException(
-                            "Жанр с id = " + genre.getId() + " не найден");
-                }
+        if (film.getGenres() != null && !film.getGenres().isEmpty()) {
+            Set<Long> genreIds = film.getGenres().stream()
+                    .map(Genre::getId)
+                    .collect(Collectors.toSet());
+
+            if (!genreStorage.existsAllByIds(genreIds)) {
+                throw new NotFoundException("Один или несколько жанров не найдены");
             }
         }
     }

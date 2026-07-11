@@ -24,10 +24,6 @@ public class UserDbStorage extends BaseDbStorage<User> implements UserStorage {
     private static final String UPDATE_QUERY = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? "
                                                 + "WHERE id = ?";
 
-    private static final String DELETE_LIKES_QUERY = "DELETE FROM likes WHERE user_id = ?";
-
-    private static final String DELETE_FRIENDS_QUERY = "DELETE FROM friends WHERE user_id = ? OR friend_id = ?";
-
     private static final String DELETE_USER_QUERY = "DELETE FROM users WHERE id = ?";
 
     private static final String ADD_FRIEND_QUERY =
@@ -78,8 +74,6 @@ public class UserDbStorage extends BaseDbStorage<User> implements UserStorage {
 
     @Override
     public void deleteUser(Long id) {
-        jdbc.update(DELETE_LIKES_QUERY, id);
-        jdbc.update(DELETE_FRIENDS_QUERY, id, id);
         delete(DELETE_USER_QUERY, id);
     }
 

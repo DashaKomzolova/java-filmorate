@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -9,6 +10,8 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.*;
 
 @Component
@@ -31,8 +34,6 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
             "duration = ?, mpa_id = ? WHERE id = ?";
 
     private static final String DELETE_MOVIE_GENRE_QUERY = "DELETE FROM movie_genre WHERE film_id = ?";
-
-    private static final String DELETE_LIKES_QUERY = "DELETE FROM likes WHERE film_id = ?";
 
     private static final String DELETE_FILM_QUERY = "DELETE FROM film WHERE id = ?";
 
@@ -80,7 +81,7 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
         );
         film.setId(id);
         saveGenres(film);
-        return getFilmById(id);
+        return film;
     }
 
     @Override
@@ -96,22 +97,32 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
         );
         jdbc.update(DELETE_MOVIE_GENRE_QUERY, film.getId());
         saveGenres(film);
-        return getFilmById(film.getId());
+        return film;
     }
 
     private void saveGenres(Film film) {
         if (film.getGenres() == null || film.getGenres().isEmpty()) {
             return;
         }
-        for (Genre genre : film.getGenres()) {
-            jdbc.update(INSERT_MOVIE_GENRE_QUERY, film.getId(), genre.getId());
-        }
+
+        List<Genre> genres = new ArrayList<>(film.getGenres());
+
+        jdbc.batchUpdate(INSERT_MOVIE_GENRE_QUERY, new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                ps.setLong(1, film.getId());
+                ps.setLong(2, genres.get(i).getId());
+            }
+
+            @Override
+            public int getBatchSize() {
+                return genres.size();
+            }
+        });
     }
 
     @Override
     public void deleteFilm(Long id) {
-        jdbc.update(DELETE_MOVIE_GENRE_QUERY, id);
-        jdbc.update(DELETE_LIKES_QUERY, id);
         delete(DELETE_FILM_QUERY, id);
     }
 

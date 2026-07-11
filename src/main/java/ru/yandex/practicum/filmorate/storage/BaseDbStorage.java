@@ -11,6 +11,8 @@ import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public class BaseDbStorage<T> {
@@ -59,5 +61,20 @@ public class BaseDbStorage<T> {
         } else {
             throw new InternalServerException("Не удалось сохранить данные");
         }
+    }
+
+    protected boolean existsAllByIds(String tableName, Set<Long> ids) {
+        if (ids.isEmpty()) {
+            return true;
+        }
+
+        String placeholders = ids.stream()
+                .map(id -> "?")
+                .collect(Collectors.joining(","));
+
+        String query = "SELECT COUNT(*) FROM " + tableName + " WHERE id IN (" + placeholders + ")";
+
+        Integer count = jdbc.queryForObject(query, Integer.class, ids.toArray());
+        return count != null && count == ids.size();
     }
 }
