@@ -13,6 +13,7 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 @Qualifier("filmDbStorage")
@@ -137,8 +138,12 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
     @Override
     public Collection<Film> getAllFilms() {
         List<Film> films = findMany(FIND_ALL_QUERY);
+
+        List<Long> filmIds = films.stream().map(Film::getId).collect(Collectors.toList());
+        Map<Long, Set<Genre>> genresByFilmId = loadGenresForFilms(filmIds);
+
         for (Film film : films) {
-            film.setGenres(loadGenres(film.getId()));
+            film.setGenres(genresByFilmId.get(film.getId()));
         }
         return films;
     }
@@ -162,8 +167,12 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
     @Override
     public List<Film> getPopularFilms(int count) {
         List<Film> films = jdbc.query(FIND_POPULAR_QUERY, mapper, count);
+
+        List<Long> filmIds = films.stream().map(Film::getId).collect(Collectors.toList());
+        Map<Long, Set<Genre>> genresByFilmId = loadGenresForFilms(filmIds);
+
         for (Film film : films) {
-            film.setGenres(loadGenres(film.getId()));
+            film.setGenres(genresByFilmId.get(film.getId()));
         }
         return films;
     }
@@ -171,5 +180,39 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
     private Set<Genre> loadGenres(Long filmId) {
         List<Genre> genres = jdbc.query(FIND_GENRES_BY_FILM_ID_QUERY, genreMapper, filmId);
         return new LinkedHashSet<>(genres);
+    }
+
+    private Map<Long, Set<Genre>> loadGenresForFilms(List<Long> filmIds) {
+        Map<Long, Set<Genre>> genresByFilmId = new HashMap<>();
+
+        for (Long filmId : filmIds) {
+            genresByFilmId.put(filmId, new LinkedHashSet<>());
+        }
+
+        if (filmIds.isEmpty()) {
+            return genresByFilmId;
+        }
+
+        String placeholders = filmIds.stream()
+                .map(id -> "?")
+                .collect(Collectors.joining(","));
+
+        String query = "SELECT mg.film_id, g.id, g.name FROM genre g " +
+                "JOIN movie_genre mg ON g.id = mg.genre_id " +
+                "WHERE mg.film_id IN (" + placeholders + ") " +
+                "ORDER BY g.id";
+
+        List<Map<String, Object>> rows = jdbc.queryForList(query, filmIds.toArray());
+
+        for (Map<String, Object> row : rows) {
+            Long filmId = ((Number) row.get("film_id")).longValue();
+            Genre genre = new Genre();
+            genre.setId(((Number) row.get("id")).longValue());
+            genre.setName((String) row.get("name"));
+
+            genresByFilmId.get(filmId).add(genre);
+        }
+
+        return genresByFilmId;
     }
 }
