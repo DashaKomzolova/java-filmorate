@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -62,6 +63,21 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public boolean existsById(Long id) {
         return films.containsKey(id);
+    }
+
+    @Override
+    public void addLike(Long filmId, Long userId) {
+
+    }
+
+    @Override
+    public void removeLike(Long filmId, Long userId) {
+
+    }
+
+    @Override
+    public List<Film> getPopularFilms(int count) {
+        return List.of();
     }
 
     private void validateReleaseDate(LocalDate releaseDate) {
